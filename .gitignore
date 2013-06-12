@@ -1,4 +1,6 @@
 config/*
+queries/*
 !config/.gitkeep
+!queries/.gitkeep
 .idea
 *.pyc

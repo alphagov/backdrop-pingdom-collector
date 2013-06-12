@@ -1,10 +1,11 @@
 from datetime import timedelta, datetime
+import pytz
 import requests
 import time
 import logging
 
-
 logging.basicConfig(level=logging.DEBUG)
+
 
 class Pingdom(object):
     def __init__(self, config):
@@ -29,11 +30,15 @@ class Pingdom(object):
         hours = response['summary']['hours']
         new_hours = []
         for hour in hours:
-            hour.update({'starttime': datetime.fromtimestamp(hour['starttime'])})
+            hour.update({'starttime': datetime.fromtimestamp(
+                hour['starttime'],
+                tz=pytz.UTC
+            )})
             new_hours.append(hour)
         return new_hours
 
-    def uptime_for_week(self, app_code, day):
+    def uptime_for_last_24_hours(self, name, day):
+        app_code = self.check_id(name)
         previous_day = day - timedelta(days=1)
         params={
                 "includeuptime": "true",

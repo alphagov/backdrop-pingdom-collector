@@ -1,1 +1,2 @@
 requests
+-e git+git://github.com/alphagov/backdrop-collector.git#egg=Package
