@@ -7,6 +7,21 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 
+def _send_authenticated_pingdom_request(path, user, password, app_key, url_params):
+    response = requests.get(
+        url = "https://api.pingdom.com/api/2.0/" + path,
+        auth = (user, password),
+        headers = {
+            'App-key': app_key
+        },
+        params = url_params
+    )
+
+    response.raise_for_status()
+
+    return response.json()
+
+
 class Pingdom(object):
     def __init__(self, config):
         self.user = config['user']
@@ -46,22 +61,29 @@ class Pingdom(object):
                 "to": time.mktime(day.timetuple()),
                 "resolution": "hour"
         }
-        response = \
-            self._make_request("summary.performance/" + str(app_code), params)
+        path = "summary.performance/" + str(app_code)
 
-        if response.status_code in [500, 502, 503, 504]:
-            logging.error("5xx response: %s" % response.text)
-            return None
-        else:
-            return self._build_response(response.json())
+        try:
+            return self._build_response(_send_authenticated_pingdom_request(
+                path=path,
+                user=self.user,
+                password=self.password,
+                app_key=self.app_key,
+                url_params=params
+            ))
+        except requests.exceptions.HTTPError as e:
+            logging.error("Request to pingdom failed: %s" % str(e))
 
     def check_id(self, name):
-        response = self._make_request("checks")
+        checks = _send_authenticated_pingdom_request(
+            path="checks",
+            user=self.user,
+            password=self.password,
+            app_key=self.app_key,
+            url_params=None
+        )
 
-        if response.status_code in [401, 403]:
-            logging.error("401/403 response from Pingdom: bad credentials?")
-
-        check_to_find = [check for check in response.json()["checks"]
+        check_to_find = [check for check in checks["checks"]
              if check["name"] == name]
 
         return check_to_find[0]["id"]

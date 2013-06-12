@@ -1,10 +1,16 @@
 from datetime import date, datetime
+from time import mktime
 import unittest
 from hamcrest import *
 from mock import patch, Mock
 import pytz
 from requests import Response
+import requests
 from collector.pingdom import Pingdom
+
+
+def unix_timestamp(_datetime):
+    return mktime(_datetime.timetuple())
 
 
 class TestPingdomApi(unittest.TestCase):
@@ -19,40 +25,35 @@ class TestPingdomApi(unittest.TestCase):
         pingdom = Pingdom(self.config)
         assert_that(pingdom, is_(instance_of(Pingdom)))
 
-    @patch("requests.get")
-    def test_querying_for_uptime(self, mock_get_request):
-        fake_response = Mock()
-        fake_response.status_code = 200
-        fake_response.json.return_value = {"summary": {"hours": []}}
-        mock_get_request.return_value = fake_response
+    @patch("collector.pingdom._send_authenticated_pingdom_request")
+    def test_querying_for_uptime(self, send_request):
+
+        def mock_send_request(*args, **kwargs):
+            if kwargs["path"] == "summary.performance/12345":
+                return {"summary": {"hours": []}}
+            if kwargs["path"] == "checks":
+                return {"checks": [ {"name": "Foo", "id": 12345} ]}
+
+        send_request.side_effect = mock_send_request
 
         pingdom = Pingdom(self.config)
-        mock_check_id = Mock()
-        mock_check_id.return_value = '12345'
-        pingdom.check_id = mock_check_id
+
         uptime = pingdom.uptime_for_last_24_hours(name='Foo',
-                                                      day=date(2013, 1,
-                                                                     1))
+                                                  day=date(2013, 1, 1))
 
-        from_value = mock_get_request.call_args_list[0][1]['params']['from']
-        to_value = mock_get_request.call_args_list[0][1]['params']['to']
-        seconds_in_day = 60 * 60 * 24
-
-        mock_get_request.assert_called_with(
-            url="https://api.pingdom.com/api/2.0/summary.performance/12345",
-            auth=("foo@bar.com","secret"),
-            params={
+        send_request.assert_called_with(
+            path="summary.performance/12345",
+            user="foo@bar.com",
+            password="secret",
+            app_key="12345",
+            url_params={
                 "includeuptime": "true",
-                "from": 1356912000.0,
-                "to": 1356998400.0,
+                "from": unix_timestamp(date(2012,12,31)),
+                "to": unix_timestamp(date(2013, 1, 1)),
                 "resolution": "hour"
-            },
-            headers={
-                "App-Key": "12345"
             }
         )
 
-        assert_that(to_value - from_value, is_(seconds_in_day))
         assert_that(uptime, is_([]))
 
     @patch("requests.get")
@@ -78,11 +79,9 @@ class TestPingdomApi(unittest.TestCase):
         assert_that(uptime[1]['starttime'],
                     is_(datetime(2013, 1, 1, 0, 1, 40, tzinfo=pytz.UTC)))
 
-    @patch("requests.get")
-    def test_uptime_returns_none_when_there_is_an_error(self, mock_request):
-        response = Response()
-        response.status_code = 500
-        mock_request.return_value = response
+    @patch("collector.pingdom._send_authenticated_pingdom_request")
+    def test_uptime_returns_none_when_there_is_an_error(self, send_request):
+        send_request.side_effect = requests.exceptions.HTTPError()
 
         pingdom = Pingdom(self.config)
         mock_check_id = Mock()
