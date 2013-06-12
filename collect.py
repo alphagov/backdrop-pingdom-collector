@@ -1,37 +1,22 @@
-from datetime import date, datetime
+from datetime import date
 import json
 from pprint import pprint
-import sys
-import argparse
 from collector.pingdom import Pingdom
+from backdrop.collector import arguments
 
 def get_contents_as_json(path_to_file):
     with open(path_to_file) as file_to_load:
         print path_to_file
         return json.load(file_to_load)
 
-parser = argparse.ArgumentParser(
-    description="Read up time and response time from the Pingdom API and send"
-                "to backdrop"
-)
+args = arguments.parse_args(name="Pingdom")
 
-parser.add_argument('-q', '--query', dest='query',
-                    help="File containing query and destination information")
 
-parser.add_argument('-c', '--credentials', dest='credentials',
-                    help="File containing Pingdom credentials",
-                    default="config/credentials.json")
+pingdom = Pingdom(args.credentials)
 
-args = parser.parse_args()
 
-pingdom_credentials = get_contents_as_json(args.credentials)
-query = get_contents_as_json(args.query)
+pprint(args.query)
 
-pingdom = Pingdom(pingdom_credentials)
-
-name_of_check = query['query']['name']
-
-name = "EFG"
-r = pingdom.uptime_for_last_24_hours(name, date.today())
+r = pingdom.uptime_for_last_24_hours(args.query['query']['name'], date.today())
 
 pprint(r)

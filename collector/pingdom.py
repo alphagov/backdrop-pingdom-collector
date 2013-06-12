@@ -87,3 +87,8 @@ class Pingdom(object):
              if check["name"] == name]
 
         return check_to_find[0]["id"]
+
+
+class Collector(object):
+    def __init__(self, config):
+        pass
