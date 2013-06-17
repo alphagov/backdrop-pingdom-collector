@@ -4,7 +4,6 @@ import unittest
 from hamcrest import *
 from mock import patch, Mock
 import pytz
-from requests import Response
 import requests
 from collector.pingdom import Pingdom
 
