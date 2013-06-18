@@ -19,9 +19,10 @@ class TestCollect(unittest.TestCase):
         name_of_check = 'testCheck'
         doc = convert_from_pingdom_to_backdrop(hourly_stats, name_of_check)
 
-        assert_that(doc, has_entry('_timestamp', '2013-06-15T22:00:00+00:00'))
         assert_that(doc,
                     has_entry('_id', 'testCheck.2013-06-15T22:00:00+00:00'))
+        assert_that(doc, has_entry('_timestamp', '2013-06-15T22:00:00+00:00'))
+        assert_that(doc, has_entry('check', 'testCheck'))
         assert_that(doc, has_entry('avgresponse', 721))
         assert_that(doc, has_entry('uptime', 3599))
         assert_that(doc, has_entry('downtime', 523))

@@ -20,6 +20,7 @@ def convert_from_pingdom_to_backdrop(pingdom_stats, name_of_check):
         'uptime': pingdom_stats['uptime'],
         'downtime': pingdom_stats['downtime'],
         'unmonitored': pingdom_stats['unmonitored'],
+        'check': name_of_check
     }
 
 if __name__ == '__main__':
