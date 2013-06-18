@@ -7,14 +7,15 @@ import logging
 logging.basicConfig(level=logging.DEBUG)
 
 
-def _send_authenticated_pingdom_request(path, user, password, app_key, url_params):
+def _send_authenticated_pingdom_request(path, user, password, app_key,
+                                        url_params):
     response = requests.get(
-        url = "https://api.pingdom.com/api/2.0/" + path,
-        auth = (user, password),
-        headers = {
+        url="https://api.pingdom.com/api/2.0/" + path,
+        auth=(user, password),
+        headers={
             'App-key': app_key
         },
-        params = url_params
+        params=url_params
     )
 
     response.raise_for_status()
@@ -52,14 +53,17 @@ class Pingdom(object):
             new_hours.append(hour)
         return new_hours
 
-    def uptime_for_last_24_hours(self, name, day):
-        app_code = self.check_id(name)
-        previous_day = day - timedelta(days=1)
-        params={
-                "includeuptime": "true",
-                "from": time.mktime(previous_day.timetuple()),
-                "to": time.mktime(day.timetuple()),
-                "resolution": "hour"
+    def stats_for_24_hours(self, name, limit_time):
+        start_time = limit_time - timedelta(days=1)
+        return self.stats(name, start_time, limit_time)
+
+    def stats(self, check_name, start, end):
+        app_code = self.check_id(check_name)
+        params = {
+            "includeuptime": "true",
+            "from": time.mktime(start.timetuple()),
+            "to": time.mktime(end.timetuple()),
+            "resolution": "hour"
         }
         path = "summary.performance/" + str(app_code)
 
@@ -84,7 +88,7 @@ class Pingdom(object):
         )
 
         check_to_find = [check for check in checks["checks"]
-             if check["name"] == name]
+                         if check["name"] == name]
 
         return check_to_find[0]["id"]
 

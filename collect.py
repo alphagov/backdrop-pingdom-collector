@@ -1,8 +1,11 @@
-from datetime import date
+from datetime import datetime
 import json
+
 from backdrop.collector.write import Bucket
-from collector.pingdom import Pingdom
 from backdrop.collector import arguments
+
+from collector.pingdom import Pingdom
+
 
 def get_contents_as_json(path_to_file):
     with open(path_to_file) as file_to_load:
@@ -23,14 +26,19 @@ def convert_from_pingdom_to_backdrop(pingdom_stats, name_of_check):
         'check': name_of_check
     }
 
+
+def truncate_hour_fraction(a_datetime):
+    return a_datetime.replace(minute=0, second=0, microsecond=0)
+
+
 if __name__ == '__main__':
     args = arguments.parse_args(name="Pingdom")
-
 
     pingdom = Pingdom(args.credentials)
 
     check_name = args.query['query']['name']
-    pingdom_stats = pingdom.uptime_for_last_24_hours(check_name, date.today())
+    timestamp = truncate_hour_fraction(datetime.now())
+    pingdom_stats = pingdom.stats_for_24_hours(check_name, timestamp)
 
     bucket_url = args.query['target']['bucket']
     bucket_token = args.query['target']['token']
