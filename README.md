@@ -1,5 +1,3 @@
-*Work in progress, may not work yet*
-
 What is it?
 ===========
 
