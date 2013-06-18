@@ -4,3 +4,5 @@ queries/*
 !queries/.gitkeep
 .idea
 *.pyc
+.coverage
+out
