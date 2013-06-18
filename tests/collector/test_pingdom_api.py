@@ -25,20 +25,22 @@ class TestPingdomApi(unittest.TestCase):
         assert_that(pingdom, is_(instance_of(Pingdom)))
 
     @patch("collector.pingdom._send_authenticated_pingdom_request")
-    def test_querying_for_uptime(self, send_request):
+    def test_querying_for_stats(self, send_request):
 
         def mock_send_request(*args, **kwargs):
             if kwargs["path"] == "summary.performance/12345":
                 return {"summary": {"hours": []}}
             if kwargs["path"] == "checks":
-                return {"checks": [ {"name": "Foo", "id": 12345} ]}
+                return {"checks": [{"name": "Foo", "id": 12345}]}
 
         send_request.side_effect = mock_send_request
 
         pingdom = Pingdom(self.config)
 
-        uptime = pingdom.uptime_for_last_24_hours(name='Foo',
-                                                  day=date(2013, 1, 1))
+        uptime = pingdom.stats_for_24_hours(
+            name='Foo',
+            limit_time=datetime(2013, 1, 1, 18, 0, 0)
+        )
 
         send_request.assert_called_with(
             path="summary.performance/12345",
@@ -47,8 +49,8 @@ class TestPingdomApi(unittest.TestCase):
             app_key="12345",
             url_params={
                 "includeuptime": "true",
-                "from": unix_timestamp(date(2012,12,31)),
-                "to": unix_timestamp(date(2013, 1, 1)),
+                "from": unix_timestamp(datetime(2012, 12, 31, 18, 0, 0)),
+                "to": unix_timestamp(datetime(2013, 1, 1, 18, 0, 0)),
                 "resolution": "hour"
             }
         )
@@ -70,8 +72,8 @@ class TestPingdomApi(unittest.TestCase):
         mock_check_id = Mock()
         mock_check_id.return_value = '12345'
         pingdom.check_id = mock_check_id
-        uptime = pingdom.uptime_for_last_24_hours(name='Foo',
-                                                      day=date(2013, 1, 1))
+        uptime = pingdom.stats_for_24_hours(name='Foo',
+                                                  limit_time=date(2013, 1, 1))
 
         assert_that(uptime[0]['starttime'],
                     is_(datetime(2013, 1, 1, 0, tzinfo=pytz.UTC)))
@@ -79,13 +81,13 @@ class TestPingdomApi(unittest.TestCase):
                     is_(datetime(2013, 1, 1, 0, 1, 40, tzinfo=pytz.UTC)))
 
     @patch("collector.pingdom._send_authenticated_pingdom_request")
-    def test_uptime_returns_none_when_there_is_an_error(self, send_request):
+    def test_stats_returns_none_when_there_is_an_error(self, send_request):
         send_request.side_effect = requests.exceptions.HTTPError()
 
         pingdom = Pingdom(self.config)
         mock_check_id = Mock()
         mock_check_id.return_value = '12345'
         pingdom.check_id = mock_check_id
-        uptime = pingdom.uptime_for_last_24_hours(name="don't care",
-                                                      day=date(2013, 1, 1))
+        uptime = pingdom.stats_for_24_hours(name="don't care",
+                                                  limit_time=date(2013, 1, 1))
         assert_that(uptime, is_(None))

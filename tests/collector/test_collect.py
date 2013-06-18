@@ -1,8 +1,8 @@
-import datetime
+from datetime import datetime
 import unittest
 from hamcrest import *
 import pytz
-from collect import convert_from_pingdom_to_backdrop
+from collect import convert_from_pingdom_to_backdrop, truncate_hour_fraction
 
 
 class TestCollect(unittest.TestCase):
@@ -10,8 +10,7 @@ class TestCollect(unittest.TestCase):
         hourly_stats = {
             u'avgresponse': 721,
             u'downtime': 523,
-            u'starttime': datetime.datetime(2013, 6, 15, 22, 0,
-                                            tzinfo=pytz.UTC),
+            u'starttime': datetime(2013, 6, 15, 22, 0, tzinfo=pytz.UTC),
             u'unmonitored': 12,
             u'uptime': 3599
         }
@@ -27,3 +26,13 @@ class TestCollect(unittest.TestCase):
         assert_that(doc, has_entry('uptime', 3599))
         assert_that(doc, has_entry('downtime', 523))
         assert_that(doc, has_entry('unmonitored', 12))
+
+    def test_truncate_hour_fraction(self):
+        assert_that(
+            truncate_hour_fraction(datetime(2013, 6, 15, 22, 0, 0, 0)),
+            is_(datetime(2013, 6, 15, 22, 0, 0, 0))
+        )
+        assert_that(
+            truncate_hour_fraction(datetime(2013, 6, 15, 22, 1, 2, 3)),
+            is_(datetime(2013, 6, 15, 22, 0, 0, 0))
+        )
