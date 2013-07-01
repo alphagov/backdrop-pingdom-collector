@@ -1,8 +1,10 @@
 config/*
 queries/*
 !config/.gitkeep
+!config/cronjobs
 !queries/.gitkeep
 .idea
 *.pyc
 .coverage
 out
+venv

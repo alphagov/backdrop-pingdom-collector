@@ -1,0 +1,7 @@
+1 * * * *,queries/licensing_monitoring.json,config/govuk-credentials.json
+2 * * * *,queries/licence_finder_monitoring.json,config/govuk-credentials.json
+3 * * * *,queries/pay_legalisation_post.json,config/pp-credentials.json
+4 * * * *,queries/pay_legalisation_drop_off.json,config/pp-credentials.json
+5 * * * *,queries/pay_register_death_abroad.json,config/pp-credentials.json
+6 * * * *,queries/pay_foreign_marriage_certificates.json,config/pp-credentials.json
+7 * * * *,queries/deposit_foreign_marriage.json,config/pp-credentials.json
