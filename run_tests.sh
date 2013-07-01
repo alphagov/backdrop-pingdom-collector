@@ -1,4 +1,4 @@
-et -o pipefail
+set -o pipefail
 
 function display_result {
     RESULT=$1
