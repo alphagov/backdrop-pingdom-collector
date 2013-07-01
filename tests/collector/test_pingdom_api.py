@@ -73,7 +73,7 @@ class TestPingdomApi(unittest.TestCase):
         mock_check_id.return_value = '12345'
         pingdom.check_id = mock_check_id
         uptime = pingdom.stats_for_24_hours(name='Foo',
-                                                  limit_time=date(2013, 1, 1))
+                                            limit_time=date(2013, 1, 1))
 
         assert_that(uptime[0]['starttime'],
                     is_(datetime(2013, 1, 1, 0, tzinfo=pytz.UTC)))
@@ -89,5 +89,5 @@ class TestPingdomApi(unittest.TestCase):
         mock_check_id.return_value = '12345'
         pingdom.check_id = mock_check_id
         uptime = pingdom.stats_for_24_hours(name="don't care",
-                                                  limit_time=date(2013, 1, 1))
+                                            limit_time=date(2013, 1, 1))
         assert_that(uptime, is_(None))

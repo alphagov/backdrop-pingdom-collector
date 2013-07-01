@@ -13,7 +13,6 @@ def get_contents_as_json(path_to_file):
         return json.load(file_to_load)
 
 
-
 def convert_from_pingdom_to_backdrop(pingdom_stats, name_of_check):
     timestamp = pingdom_stats['starttime'].isoformat()
     return {

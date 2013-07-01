@@ -30,7 +30,6 @@ class Pingdom(object):
         self.app_key = config['app_key']
         self.API_LOCATION = "https://api.pingdom.com/api/2.0/"
 
-
     def _make_request(self, path, url_params={}):
         response = requests.get(
             url=self.API_LOCATION + path,
