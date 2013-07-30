@@ -15,8 +15,9 @@ def get_contents_as_json(path_to_file):
 
 def convert_from_pingdom_to_backdrop(pingdom_stats, name_of_check):
     timestamp = pingdom_stats['starttime'].isoformat()
+    name_for_id = name_of_check.replace(' ', '_')
     return {
-        '_id': "%s.%s" % (name_of_check, timestamp),
+        '_id': "%s.%s" % (name_for_id, timestamp),
         '_timestamp': timestamp,
         'avgresponse': pingdom_stats['avgresponse'],
         'uptime': pingdom_stats['uptime'],

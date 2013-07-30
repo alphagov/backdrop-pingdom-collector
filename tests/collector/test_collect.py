@@ -27,6 +27,21 @@ class TestCollect(unittest.TestCase):
         assert_that(doc, has_entry('downtime', 523))
         assert_that(doc, has_entry('unmonitored', 12))
 
+    def test_converting_to_backdrop_record_removes_whitespace_from_id(self):
+        hourly_stats = {
+            u'avgresponse': 721,
+            u'downtime': 523,
+            u'starttime': datetime(2013, 6, 15, 22, 0, tzinfo=pytz.UTC),
+            u'unmonitored': 12,
+            u'uptime': 3599
+        }
+        name_of_check = "name with whitespace"
+
+        doc = convert_from_pingdom_to_backdrop(hourly_stats, name_of_check)
+
+        assert_that(doc, has_entry('_id', 'name_with_whitespace.'
+                                          '2013-06-15T22:00:00+00:00'))
+
     def test_truncate_hour_fraction(self):
         assert_that(
             truncate_hour_fraction(datetime(2013, 6, 15, 22, 0, 0, 0)),
