@@ -34,10 +34,14 @@ def truncate_hour_fraction(a_datetime):
 if __name__ == '__main__':
     args = arguments.parse_args(name="Pingdom")
 
+    collection_date = datetime.now()
+    if args.end_at:
+      collection_date = args.end_at
+
     pingdom = Pingdom(args.credentials)
 
     check_name = args.query['query']['name']
-    timestamp = truncate_hour_fraction(datetime.now())
+    timestamp = truncate_hour_fraction(collection_date)
     pingdom_stats = pingdom.stats_for_24_hours(check_name, timestamp)
 
     bucket_url = args.query['target']['bucket']
