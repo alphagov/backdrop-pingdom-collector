@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     collection_date = datetime.now()
     if args.end_at:
-      collection_date = args.end_at
+        collection_date = args.end_at
 
     pingdom = Pingdom(args.credentials)
 
