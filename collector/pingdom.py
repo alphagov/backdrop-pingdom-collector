@@ -4,8 +4,6 @@ import requests
 import time
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 def _send_authenticated_pingdom_request(path, user, password, app_key,
                                         url_params):
