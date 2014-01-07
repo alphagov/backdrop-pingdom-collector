@@ -1,3 +1,4 @@
+from backdrop.collector.logging_setup import set_up_logging
 from datetime import timedelta, datetime
 import pytz
 import requests
