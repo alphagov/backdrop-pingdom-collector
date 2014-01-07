@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
+import logging
 
+from backdrop.collector.logging_setup import set_up_logging
 from backdrop.collector.write import Bucket
 from backdrop.collector import arguments
 
@@ -9,7 +11,7 @@ from collector.pingdom import Pingdom
 
 def get_contents_as_json(path_to_file):
     with open(path_to_file) as file_to_load:
-        print path_to_file
+        logging.debug(path_to_file)
         return json.load(file_to_load)
 
 
@@ -32,6 +34,8 @@ def truncate_hour_fraction(a_datetime):
 
 
 if __name__ == '__main__':
+    set_up_logging('pingdom', logging.DEBUG)
+
     args = arguments.parse_args(name="Pingdom")
 
     collection_date = datetime.now()
