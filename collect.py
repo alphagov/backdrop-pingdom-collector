@@ -34,7 +34,9 @@ def truncate_hour_fraction(a_datetime):
 
 
 if __name__ == '__main__':
-    set_up_logging('pingdom', logging.DEBUG)
+    app_path = os.path.dirname(os.path.realpath(__file__))
+    logfile_path = os.path.join(app_path, 'log')
+    set_up_logging('pingdom', logging.DEBUG, logfile_path)
 
     args = arguments.parse_args(name="Pingdom")
 
