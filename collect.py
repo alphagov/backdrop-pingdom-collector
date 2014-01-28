@@ -1,5 +1,6 @@
 from datetime import datetime
 import json
+import os
 import logging
 
 from backdrop.collector.logging_setup import set_up_logging
@@ -32,8 +33,8 @@ def convert_from_pingdom_to_backdrop(pingdom_stats, name_of_check):
 def truncate_hour_fraction(a_datetime):
     return a_datetime.replace(minute=0, second=0, microsecond=0)
 
-
-if __name__ == '__main__':
+#or super type thing?
+def args_parser(arguments):
     app_path = os.path.dirname(os.path.realpath(__file__))
     logfile_path = os.path.join(app_path, 'log')
     set_up_logging('pingdom', logging.DEBUG, logfile_path)
@@ -55,3 +56,6 @@ if __name__ == '__main__':
     bucket = Bucket(url=bucket_url, token=bucket_token)
     bucket.post([convert_from_pingdom_to_backdrop(thing, check_name) for
                  thing in pingdom_stats])
+
+if __name__ == '__main__':
+  args_parser(arguments)

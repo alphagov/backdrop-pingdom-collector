@@ -2,7 +2,10 @@ from datetime import datetime
 import unittest
 from hamcrest import *
 import pytz
-from collect import convert_from_pingdom_to_backdrop, truncate_hour_fraction
+import collect
+from mock import patch, Mock
+from backdrop import collector 
+from backdrop.collector import arguments
 
 
 class TestCollect(unittest.TestCase):
@@ -16,7 +19,7 @@ class TestCollect(unittest.TestCase):
         }
 
         name_of_check = 'testCheck'
-        doc = convert_from_pingdom_to_backdrop(hourly_stats, name_of_check)
+        doc = collect.convert_from_pingdom_to_backdrop(hourly_stats, name_of_check)
 
         assert_that(doc,
                     has_entry('_id', 'testCheck.2013-06-15T22:00:00+00:00'))
@@ -37,17 +40,32 @@ class TestCollect(unittest.TestCase):
         }
         name_of_check = "name with whitespace"
 
-        doc = convert_from_pingdom_to_backdrop(hourly_stats, name_of_check)
+        doc = collect.convert_from_pingdom_to_backdrop(hourly_stats, name_of_check)
 
         assert_that(doc, has_entry('_id', 'name_with_whitespace.'
                                           '2013-06-15T22:00:00+00:00'))
 
     def test_truncate_hour_fraction(self):
         assert_that(
-            truncate_hour_fraction(datetime(2013, 6, 15, 22, 0, 0, 0)),
+            collect.truncate_hour_fraction(datetime(2013, 6, 15, 22, 0, 0, 0)),
             is_(datetime(2013, 6, 15, 22, 0, 0, 0))
         )
         assert_that(
-            truncate_hour_fraction(datetime(2013, 6, 15, 22, 1, 2, 3)),
+            collect.truncate_hour_fraction(datetime(2013, 6, 15, 22, 1, 2, 3)),
             is_(datetime(2013, 6, 15, 22, 0, 0, 0))
         )
+
+    def test_args_parser(self):
+        stub_set_up_logging = Mock()
+        collect.set_up_logging = stub_set_up_logging 
+        stub_pass_args = Mock()
+        stub_args = Mock()
+        stub_args.end_at = None 
+        stub_args.query = {'query': {'name': None}, 'target': {'bucket': None, 'token': None}}
+        stub_pass_args.return_value = stub_args
+        arguments.parse_args = stub_pass_args 
+        mock_pingdom = Mock()
+        mock_pingdom.stats_for_24_hours = Mock().return_value = ["some", "things"]
+        collect.Pingdom = mock_pingdom
+        collect.convert_from_pingdom_to_backdrop = Mock().return_value = "HELLOO"
+        collect.args_parser(arguments)
