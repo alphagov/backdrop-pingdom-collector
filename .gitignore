@@ -1,6 +1,8 @@
 config/*
 queries/*
 !config/.gitkeep
+!config/example_credentials.json
+!queries/example_query.json
 !queries/.gitkeep
 .idea
 *.pyc
