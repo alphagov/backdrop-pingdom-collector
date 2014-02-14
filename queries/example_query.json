@@ -1,0 +1,9 @@
+{
+    "target": {
+        "bucket":"http://write.backdrop.perfplat.dev/data/data-group/data-type",
+        "token":"bearer token"
+    },
+    "query": {
+        "name": "My App"
+    }
+}
