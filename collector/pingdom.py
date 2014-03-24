@@ -51,10 +51,6 @@ class Pingdom(object):
             new_hours.append(hour)
         return new_hours
 
-    def stats_for_24_hours(self, name, limit_time):
-        start_time = limit_time - timedelta(days=1)
-        return self.stats(name, start_time, limit_time)
-
     def stats(self, check_name, start, end):
         app_code = self.check_id(check_name)
         params = {
