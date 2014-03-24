@@ -11,24 +11,39 @@ from collector.pingdom import Pingdom
 
 
 def main():
-    app_path = os.path.dirname(os.path.realpath(__file__))
-    logfile_path = os.path.join(app_path, 'log')
-    set_up_logging('pingdom', logging.DEBUG, logfile_path)
+    configure_logging()
 
     args = arguments.parse_args(name="Pingdom")
 
-    collection_date = datetime.now()
-    if args.end_at:
-        collection_date = args.end_at
+    timestamp = extract_end_time_or_now(args.end_at)
 
     pingdom = Pingdom(args.credentials)
 
     check_name = args.query['query']['name']
-    timestamp = truncate_hour_fraction(collection_date)
     pingdom_stats = pingdom.stats_for_24_hours(check_name, timestamp)
 
-    bucket_url = args.query['target']['bucket']
-    bucket_token = args.query['target']['token']
+    push_stats_to_bucket(
+        pingdom_stats,
+        check_name,
+        bucket_url=args.query['target']['bucket'],
+        bucket_token=args.query['target']['token'])
+
+
+def configure_logging():
+    app_path = os.path.dirname(os.path.realpath(__file__))
+    logfile_path = os.path.join(app_path, 'log')
+    set_up_logging('pingdom', logging.DEBUG, logfile_path)
+
+
+def extract_end_time_or_now(end_at_datetime):
+    collection_datetime = datetime.now()
+    if end_at_datetime:
+        collection_datetime = end_at_datetime
+
+    return truncate_hour_fraction(collection_datetime)
+
+
+def push_stats_to_bucket(pingdom_stats, check_name, bucket_url, bucket_token):
     bucket = Bucket(url=bucket_url, token=bucket_token)
     bucket.post([convert_from_pingdom_to_backdrop(thing, check_name) for
                  thing in pingdom_stats])
