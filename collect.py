@@ -17,12 +17,12 @@ def main():
 
     args = arguments.parse_args(name="Pingdom")
 
-    timestamp = extract_end_time_or_now(args.end_at)
+    start_dt, end_dt = parse_time_range(args.start_at, args.end_at)
 
     pingdom = Pingdom(args.credentials)
 
     check_name = args.query['query']['name']
-    pingdom_stats = pingdom.stats_for_24_hours(check_name, timestamp)
+    pingdom_stats = pingdom.stats(check_name, start_dt, end_dt)
 
     push_stats_to_bucket(
         pingdom_stats,
@@ -35,14 +35,6 @@ def configure_logging():
     app_path = os.path.dirname(os.path.realpath(__file__))
     logfile_path = os.path.join(app_path, 'log')
     set_up_logging('pingdom', logging.DEBUG, logfile_path)
-
-
-def extract_end_time_or_now(end_at_datetime):
-    collection_datetime = datetime.now()
-    if end_at_datetime:
-        collection_datetime = end_at_datetime
-
-    return truncate_hour_fraction(collection_datetime)
 
 
 def parse_time_range(start_dt, end_dt):
