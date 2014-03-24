@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from time import mktime
 import unittest
-from hamcrest import *
+from hamcrest import assert_that, is_, instance_of
 from mock import patch, Mock
 import pytz
 import requests
@@ -37,9 +37,10 @@ class TestPingdomApi(unittest.TestCase):
 
         pingdom = Pingdom(self.config)
 
-        uptime = pingdom.stats_for_24_hours(
-            name='Foo',
-            limit_time=datetime(2013, 1, 1, 18, 0, 0)
+        uptime = pingdom.stats(
+            check_name='Foo',
+            start=datetime(2012, 12, 31, 18, 0, 0),
+            end=datetime(2013, 1, 1, 18, 0, 0)
         )
 
         send_request.assert_called_with(
@@ -72,8 +73,10 @@ class TestPingdomApi(unittest.TestCase):
         mock_check_id = Mock()
         mock_check_id.return_value = '12345'
         pingdom.check_id = mock_check_id
-        uptime = pingdom.stats_for_24_hours(name='Foo',
-                                            limit_time=date(2013, 1, 1))
+        uptime = pingdom.stats(
+            check_name='Foo',
+            start=date(2012, 12, 31),
+            end=date(2013, 1, 1))
 
         assert_that(uptime[0]['starttime'],
                     is_(datetime(2013, 1, 1, 0, tzinfo=pytz.UTC)))
@@ -88,6 +91,8 @@ class TestPingdomApi(unittest.TestCase):
         mock_check_id = Mock()
         mock_check_id.return_value = '12345'
         pingdom.check_id = mock_check_id
-        uptime = pingdom.stats_for_24_hours(name="don't care",
-                                            limit_time=date(2013, 1, 1))
+        uptime = pingdom.stats(
+            check_name="don't care",
+            start=date(2012, 12, 31),
+            end=date(2013, 1, 1))
         assert_that(uptime, is_(None))

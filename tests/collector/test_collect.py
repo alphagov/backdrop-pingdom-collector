@@ -1,8 +1,11 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import unittest
-from hamcrest import *
+from hamcrest import assert_that, has_entry, is_
 import pytz
-from collect import convert_from_pingdom_to_backdrop, truncate_hour_fraction
+from collect import (convert_from_pingdom_to_backdrop, truncate_hour_fraction,
+                     parse_time_range)
+
+from freezegun import freeze_time
 
 
 class TestCollect(unittest.TestCase):
@@ -51,3 +54,52 @@ class TestCollect(unittest.TestCase):
             truncate_hour_fraction(datetime(2013, 6, 15, 22, 1, 2, 3)),
             is_(datetime(2013, 6, 15, 22, 0, 0, 0))
         )
+
+    def test_start_date_no_end_date_results_in_period_until_now(self):
+        start_dt = datetime(2013, 6, 15, 13, 0)
+        end_dt = None
+
+        now = datetime(2014, 2, 15, 11, 0)
+
+        with freeze_time(now):
+            assert_that(
+                parse_time_range(start_dt, end_dt),
+                is_((start_dt, now)))
+
+    def test_end_date_no_start_date_results_in_2005_until_start_date(self):
+        start_dt = None
+        end_dt = datetime(2013, 6, 15, 13, 0)
+
+        earliest = datetime(2005, 1, 1)
+
+        assert_that(
+            parse_time_range(start_dt, end_dt),
+            is_((earliest, end_dt)))
+
+    def test_start_and_end_results_in_correct_period(self):
+        start_dt = datetime(2013, 6, 10, 10, 0)
+        end_dt = datetime(2013, 6, 15, 13, 0)
+
+        assert_that(
+            parse_time_range(start_dt, end_dt),
+            is_((start_dt, end_dt)))
+
+    def test_parse_time_range_no_start_or_end_uses_last_24_hours(self):
+        now = datetime(2013, 12, 27, 13, 0, 0)
+        one_day_ago = now - timedelta(days=1)
+
+        with freeze_time(now):
+            assert_that(
+                parse_time_range(None, None),
+                is_((one_day_ago, now)))
+
+    def test_parse_time_range_truncates_the_hour(self):
+        start_dt = datetime(2013, 6, 27, 10, 15, 34)
+        end_dt = datetime(2013, 6, 30, 13, 45, 30)
+
+        expected_start_dt = datetime(2013, 6, 27, 10, 0, 0)
+        expected_end_dt = datetime(2013, 6, 30, 13, 0, 0)
+
+        assert_that(
+            parse_time_range(start_dt, end_dt),
+            is_((expected_start_dt, expected_end_dt)))
