@@ -43,6 +43,17 @@ def extract_end_time_or_now(end_at_datetime):
     return truncate_hour_fraction(collection_datetime)
 
 
+def parse_time_range(start_dt, end_dt):
+    """
+    Convert the start/end datetimes specified by the user, specifically:
+    - truncate any minutes/seconds
+    - for a missing end time, use start + 24 hours
+    - for a missing start time, use end - 24 hours
+    - for missing start and end, use the last 24 hours
+    """
+    return start_dt, end_dt  # TODO
+
+
 def push_stats_to_bucket(pingdom_stats, check_name, bucket_url, bucket_token):
     bucket = Bucket(url=bucket_url, token=bucket_token)
     bucket.post([convert_from_pingdom_to_backdrop(thing, check_name) for
