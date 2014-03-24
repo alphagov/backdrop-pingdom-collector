@@ -10,6 +10,30 @@ from backdrop.collector import arguments
 from collector.pingdom import Pingdom
 
 
+def main():
+    app_path = os.path.dirname(os.path.realpath(__file__))
+    logfile_path = os.path.join(app_path, 'log')
+    set_up_logging('pingdom', logging.DEBUG, logfile_path)
+
+    args = arguments.parse_args(name="Pingdom")
+
+    collection_date = datetime.now()
+    if args.end_at:
+        collection_date = args.end_at
+
+    pingdom = Pingdom(args.credentials)
+
+    check_name = args.query['query']['name']
+    timestamp = truncate_hour_fraction(collection_date)
+    pingdom_stats = pingdom.stats_for_24_hours(check_name, timestamp)
+
+    bucket_url = args.query['target']['bucket']
+    bucket_token = args.query['target']['token']
+    bucket = Bucket(url=bucket_url, token=bucket_token)
+    bucket.post([convert_from_pingdom_to_backdrop(thing, check_name) for
+                 thing in pingdom_stats])
+
+
 def get_contents_as_json(path_to_file):
     with open(path_to_file) as file_to_load:
         logging.debug(path_to_file)
@@ -35,24 +59,4 @@ def truncate_hour_fraction(a_datetime):
 
 
 if __name__ == '__main__':
-    app_path = os.path.dirname(os.path.realpath(__file__))
-    logfile_path = os.path.join(app_path, 'log')
-    set_up_logging('pingdom', logging.DEBUG, logfile_path)
-
-    args = arguments.parse_args(name="Pingdom")
-
-    collection_date = datetime.now()
-    if args.end_at:
-        collection_date = args.end_at
-
-    pingdom = Pingdom(args.credentials)
-
-    check_name = args.query['query']['name']
-    timestamp = truncate_hour_fraction(collection_date)
-    pingdom_stats = pingdom.stats_for_24_hours(check_name, timestamp)
-
-    bucket_url = args.query['target']['bucket']
-    bucket_token = args.query['target']['token']
-    bucket = Bucket(url=bucket_url, token=bucket_token)
-    bucket.post([convert_from_pingdom_to_backdrop(thing, check_name) for
-                 thing in pingdom_stats])
+    main()
