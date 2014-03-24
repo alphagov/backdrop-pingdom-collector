@@ -1,6 +1,6 @@
 from datetime import datetime
 import unittest
-from hamcrest import *
+from hamcrest import assert_that, has_entry, is_
 import pytz
 from collect import convert_from_pingdom_to_backdrop, truncate_hour_fraction
 

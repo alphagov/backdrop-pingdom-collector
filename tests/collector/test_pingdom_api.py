@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from time import mktime
 import unittest
-from hamcrest import *
+from hamcrest import assert_that, is_, instance_of
 from mock import patch, Mock
 import pytz
 import requests
