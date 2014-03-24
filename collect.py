@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import os
@@ -8,6 +8,8 @@ from backdrop.collector.write import Bucket
 from backdrop.collector import arguments
 
 from collector.pingdom import Pingdom
+
+_EARLIEST_DATE = datetime(2005, 1, 1)
 
 
 def main():
@@ -51,7 +53,19 @@ def parse_time_range(start_dt, end_dt):
     - for a missing start time, use end - 24 hours
     - for missing start and end, use the last 24 hours
     """
-    return start_dt, end_dt  # TODO
+    now = datetime.now()
+
+    if start_dt and not end_dt:
+        end_dt = now
+
+    elif end_dt and not start_dt:
+        start_dt = _EARLIEST_DATE
+
+    elif not start_dt and not end_dt:  # last 24 hours
+        end_dt = now
+        start_dt = end_dt - timedelta(days=1)
+
+    return tuple(map(truncate_hour_fraction, (start_dt, end_dt)))
 
 
 def push_stats_to_bucket(pingdom_stats, check_name, bucket_url, bucket_token):
