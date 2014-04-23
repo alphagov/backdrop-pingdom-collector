@@ -4,7 +4,7 @@ import logging
 import os
 
 from backdrop.collector.logging_setup import set_up_logging
-from backdrop.collector.write import Bucket
+from backdrop.collector.write import DataSet
 from backdrop.collector import arguments
 
 from collector.pingdom import Pingdom
@@ -24,11 +24,11 @@ def main():
     check_name = args.query['query']['name']
     pingdom_stats = pingdom.stats(check_name, start_dt, end_dt)
 
-    push_stats_to_bucket(
+    push_stats_to_data_set(
         pingdom_stats,
         check_name,
-        bucket_url=args.query['target']['bucket'],
-        bucket_token=args.query['target']['token'])
+        data_set_url=args.query['target']['data_set'],
+        data_set_token=args.query['target']['token'])
 
 
 def configure_logging():
@@ -60,10 +60,13 @@ def parse_time_range(start_dt, end_dt):
     return tuple(map(truncate_hour_fraction, (start_dt, end_dt)))
 
 
-def push_stats_to_bucket(pingdom_stats, check_name, bucket_url, bucket_token):
-    bucket = Bucket(url=bucket_url, token=bucket_token)
-    bucket.post([convert_from_pingdom_to_backdrop(thing, check_name) for
-                 thing in pingdom_stats])
+def push_stats_to_data_set(pingdom_stats,
+                           check_name,
+                           data_set_url,
+                           data_set_token):
+    data_set = DataSet(url=data_set_url, token=data_set_token)
+    data_set.post([convert_from_pingdom_to_backdrop(thing, check_name) for
+                  thing in pingdom_stats])
 
 
 def get_contents_as_json(path_to_file):
