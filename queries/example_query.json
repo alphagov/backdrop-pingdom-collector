@@ -1,6 +1,6 @@
 {
     "target": {
-        "bucket":"http://write.backdrop.perfplat.dev/data/data-group/data-type",
+        "data_set":"http://write.backdrop.perfplat.dev/data/data-group/data-type",
         "token":"bearer token"
     },
     "query": {
